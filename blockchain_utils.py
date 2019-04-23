@@ -78,19 +78,24 @@ class Chain():
 
 	def __init__(self, chain_name, seed_length):
 		self.name = chain_name
-		if os.path.isfile(chain_name):
+		
+		if os.path.isfile(chain_name): # existing chain already exists
 			print("Loading blockchain '" + chain_name + "'.")
-			with open(chain_name, "r") as chain_header:
+			with open(chain_name + '/' + chain_name, "r") as chain_header:
 				self.tail = chain_header.readline()
-		else:
+		
+		else: # initialize new blockchain
 			print("Blockchain '" + chain_name + "'' does not exist. Initializing new chain.")
-			with open(chain_name, 'w+') as chain_header: 
+			os.mkdir(chain_name)
+
+			with open(chain_name + '/' + chain_name, 'w+') as chain_header: 
 				prev = os.urandom(HASH_LENGTH).hex()
 				body = os.urandom(seed_length).hex()
 				proof = os.urandom(seed_length).hex()
 				
 				root_block = Block(self.name, prev, proof, body)
 				chain_header.write(root_block.hash)
+			
 			with open(chain_name, "r") as chain_header:
 				self.tail = chain_header.readline()
 	
