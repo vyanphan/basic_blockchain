@@ -49,7 +49,7 @@ class Block():
 	Everything must be string format.
 	'''
 
-	def __init__(self, prev, proof, body):
+	def __init__(self, chain_name, prev, proof, body):
 		self.proof = proof # verify_proof(proof, prev, body) == True
 		self.prev = prev # must be string
 		self.body = body # must be string
@@ -59,7 +59,7 @@ class Block():
 			print("All arguments should be passed as string format.")
 		self.time = str(time.time())
 		
-		with open("records/" + self.hash, "w+") as block_file:
+		with open(chain_name + "/" + self.hash, "w+") as block_file:
 			block_file.write(self.hash + '\n')
 			block_file.write(self.prev + '\n')
 			block_file.write(self.body + '\n')
@@ -89,7 +89,7 @@ class Chain():
 				body = os.urandom(seed_length).hex()
 				proof = os.urandom(seed_length).hex()
 				
-				root_block = Block(prev, proof, body)
+				root_block = Block(self.name, prev, proof, body)
 				chain_header.write(root_block.hash)
 			with open(chain_name, "r") as chain_header:
 				self.tail = chain_header.readline()
@@ -103,7 +103,7 @@ class Chain():
 
 	def append_block(self, prev, proof, body):
 		if self.verify_proof(prev, proof, body):
-			new_block = Block(prev, proof, body)
+			new_block = Block(self.name, prev, proof, body)
 			with open(self.name, 'w') as chain_header:
 				chain_header.write(new_block.hash)
 				self.tail = new_block.hash 
