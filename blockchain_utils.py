@@ -1,7 +1,18 @@
+'''
+A very, very naive blockchain.
+
+Only used for demo purposes. 
+
+Not provably secure. Meant to show that it works in the context of this project.
+'''
+
+
+
 import hashlib
 import os
 from stat import S_IREAD, S_IRGRP, S_IROTH
 import binascii
+import time
 
 HASH_FN = hashlib.sha512
 HASH_LENGTH = 512
@@ -24,31 +35,52 @@ def format_update(update_file):
 
 
 class Block():
-	def __init__(self, prev, body):
-		self.prev = prev # must be bytestring
-		self.body = body # must be bytestring
+	'''
+	self.hash	=	hash of current block body and previous block hash
+	self.prev	=	hash of previous block	
+	self.body	=	body of update for current block
+
+	other data
+		self.proof	=	proof of work
+		self.time	=	timestamp
+
+	Everything must be string format.
+	'''
+
+	def __init__(self, prev, proof, body):
+		self.proof = proof # verify_proof(proof, hash, prev, body) == True
+		self.prev = prev # must be string
+		self.body = body # must be string
 		try:
-			block_hash = HASH_FN(prev + body)
+			self.hash =  HASH_FN(str.encode(prev) + str.encode(body)).hexdigest()
 		except:
-			print("Previous block hash and block body must be formatted as bytes.")
-
-		self.hash = block_hash.digest()
-		with open("records/" + block_hash.hexdigest(), "wb") as block_file:
-			block_file.write(self.hash + self.prev + self.body)
-
+			print("All arguments should be passed as string format.")
+		self.time = str(time.time())
+		
+		with open("records/" + block_hash.hexdigest(), "w+") as block_file:
+			block_file.write(self.hash + '\n')
+			block_file.write(self.prev + '\n')
+			block_file.write(self.body + '\n')
+			block_file.write(self.proof + '\n')
+			block_file.write(self.time + '\n')
 
 class Chain():
-	def __init__(self, seed_filename):
-		with open(seed_filename, "rb") as seed_file:
+	def __init__(self, chain_name):
+		with open(chain_name, 'w+') as header: 
 			prev = seed_file.read(HASH_LENGTH)
 			body = seed_file.read()
-		Block(prev, body)
-		with open()
+			Block(prev, body)
+
+
+
+		with open(seed_filename, "rb") as seed_file:
 
 		self.root = Block(prev, body)
 		self.tail = self.root
 
-	def add_block(self, update_filename):
+	
+
+	def (self, update_filename):
 		update_body = format_update(update_filename)
 		new_block = Block(self.tail.hash, update_body)
 		self.tail = new_block
