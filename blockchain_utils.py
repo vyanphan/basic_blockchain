@@ -49,21 +49,28 @@ class Block():
 		return True
 
 	def __init__(self, chain_name, proof, prev, body):
+		# generate hash of block
 		try:
 			self.hash = HASH_FN(str.encode(proof) + str.encode(prev) + str.encode(body)).hexdigest()
 		except:
 			print("All arguments should be passed as string format.")
 
+		# verify proof
 		if self.verify_proof(self.hash):
 			append_time = str(time.time())
+			
+			# write to record file
 			with open(chain_name + "/" + self.hash, "w+") as block_file:
 				block_file.write(self.hash + '\n')
 				block_file.write(proof + '\n')
 				block_file.write(prev + '\n')
 				block_file.write(body + '\n')
 				block_file.write(append_time + '\n')
-			os.chmod(chain_name + "/" + self.hash, S_IROTH)
+
+			# make file read-only
+			os.chmod(chain_name + "/" + self.hash, S_IREAD)
 		else:
+			# do not create block if proof does not verify
 			raise ProofException("Proof of work failed.")
 
 
@@ -74,6 +81,8 @@ class Chain():
 
 	self.name = name of the chain
 	self.tail = hash of most recently appended block
+		This is just meant to make appending easier for the sake of testing and demonstration.
+		This tail file is not meant to be a secure display of the latest appended block. Unlike the record files it is not write protected.
 	'''
 
 	def __init__(self, chain_name, seed_length):
@@ -88,6 +97,7 @@ class Chain():
 			print("Blockchain '" + chain_name + "'' does not exist. Initializing new chain.\n")
 			os.mkdir(chain_name)
 
+			# create new root block
 			with open(chain_name + '/' + chain_name, 'w+') as chain_header: 
 				proof = os.urandom(seed_length).hex()
 				prev = os.urandom(HASH_LENGTH).hex()
@@ -96,19 +106,24 @@ class Chain():
 				root_block = Block(self.name, proof, prev, body)
 				chain_header.write(root_block.hash)
 			
+			# initialize blockchain t ail
 			with open(chain_name + '/' + chain_name, "r") as chain_header:
 				self.tail = chain_header.readline()
 
 
 	def append_block(self, proof, prev, body):
-		try:
+		try: # attempt to create new block
 			new_block = Block(self.name, proof, prev, body)
+
+			# update header file and tail
 			with open(self.name + '/' + self.name, 'w') as chain_header:
 				chain_header.write(new_block.hash)
 				self.tail = new_block.hash 
 			print("Successfully appended update " + new_block.hash + "\n")
+		
 		except ProofException:
-			print("Proof of work failed.")
+			# do not create new block record or update tail if proof fails
+			print("Proof of work failed. Block not appended. ")
 
 
 
