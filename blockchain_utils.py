@@ -96,7 +96,7 @@ class Chain():
 				root_block = Block(self.name, prev, proof, body)
 				chain_header.write(root_block.hash)
 			
-			with open(chain_name, "r") as chain_header:
+			with open(chain_name + '/' + chain_name, "r") as chain_header:
 				self.tail = chain_header.readline()
 	
 	def verify_proof(self, prev, proof, body):
@@ -109,7 +109,7 @@ class Chain():
 	def append_block(self, prev, proof, body):
 		if self.verify_proof(prev, proof, body):
 			new_block = Block(self.name, prev, proof, body)
-			with open(self.name, 'w') as chain_header:
+			with open(self.name + '/' + self.name, 'w') as chain_header:
 				chain_header.write(new_block.hash)
 				self.tail = new_block.hash 
 			print("Successfully appended update " + new_block.hash)
@@ -117,10 +117,10 @@ class Chain():
 
 
 
-test_chain = Chain('test_chain', 720)
-# test_chain.append_block(test_chain.tail, 'blablah', 'hello world')
-# test_chain.append_block(test_chain.tail, 'gdi', 'goodbye world')
-# test_chain.append_block(test_chain.tail, 'deadbeef', 'i made steak')
+test_chain = Chain('newchain_1', 720)
+test_chain.append_block(test_chain.tail, 'blablah', 'hello world')
+test_chain.append_block(test_chain.tail, 'gdi', 'goodbye world')
+test_chain.append_block(test_chain.tail, 'deadbeef', 'i made steak')
 test_chain.append_block(test_chain.tail, 'proof 4', 'update 4')
 test_chain.append_block(test_chain.tail, 'proof 5', 'update 5')
 
