@@ -37,10 +37,10 @@ class Block():
 	Block information is formatted in this order.
 
 	self.hash	=	hash of current block body and previous block hash
-	self.proof	=	proof of work
-	self.prev	=	hash of previous block	
-	self.body	=	body of update for current block
-	self.time	=	timestamp
+	proof		=	proof of work
+	prev		=	hash of previous block	
+	body		=	body of update for current block
+	append_time	=	timestamp
 
 	Everything must be string format.
 	'''
@@ -50,14 +50,14 @@ class Block():
 
 	def __init__(self, chain_name, proof, prev, body):
 		try:
-			block_hash = HASH_FN(str.encode(proof) + str.encode(prev) + str.encode(body)).hexdigest()
+			self.hash = HASH_FN(str.encode(proof) + str.encode(prev) + str.encode(body)).hexdigest()
 		except:
 			print("All arguments should be passed as string format.")
 
-		if self.verify_proof(block_hash):
+		if self.verify_proof(self.hash):
 			append_time = str(time.time())
 			with open(chain_name + "/" + self.hash, "w+") as block_file:
-				block_file.write(block_hash + '\n')
+				block_file.write(self.hash + '\n')
 				block_file.write(proof + '\n')
 				block_file.write(prev + '\n')
 				block_file.write(body + '\n')
@@ -113,14 +113,9 @@ class Chain():
 
 
 
-test_chain = Chain('newchain_3', 720)
-test_chain.append_block(test_chain.tail, 'blablah', 'hello world')
-test_chain.append_block(test_chain.tail, 'gdi', 'goodbye world')
-test_chain.append_block(test_chain.tail, 'deadbeef', 'i made steak')
-test_chain.append_block(test_chain.tail, 'proof 4', 'update 4')
-test_chain.append_block(test_chain.tail, 'proof 5', 'update 5')
-
-
-
-
-
+test_chain = Chain('newchain_1', 720)
+test_chain.append_block('proof1', test_chain.tail, 'update1')
+test_chain.append_block('proof2', test_chain.tail, 'update2')
+test_chain.append_block('proof3', test_chain.tail, 'update3')
+test_chain.append_block('proof4', test_chain.tail, 'update4')
+test_chain.append_block('proof5', test_chain.tail, 'update5')
