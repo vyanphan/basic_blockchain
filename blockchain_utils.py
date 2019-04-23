@@ -1,12 +1,16 @@
 import hashlib
 import os
 from stat import S_IREAD, S_IRGRP, S_IROTH
+import binascii
+
+HASH_FN = hashlib.sha512
+HASH_LENGTH = 512
 
 
 def generate_random_seed(filename, num_bytes):
 	''' Generates random seed for blockchain root. '''
 	with open(filename, "wb") as file:
-		file.write(os.urandom(512)) # random starting hash
+		file.write(os.urandom(HASH_LENGTH)) # random starting hash
 		file.write(os.urandom(num_bytes)) # random starting body
 	os.chmod(filename, S_IROTH) # file is read-only
 
@@ -24,16 +28,23 @@ class Block():
 		self.prev = prev # must be bytestring
 		self.body = body # must be bytestring
 		try:
-			self.hash = hashlib.sha512(prev + body).digest()
+			block_hash = HASH_FN(prev + body)
 		except:
 			print("Previous block hash and block body must be formatted as bytes.")
+
+		self.hash = block_hash.digest()
+		with open("records/" + block_hash.hexdigest(), "wb") as block_file:
+			block_file.write(self.hash + self.prev + self.body)
 
 
 class Chain():
 	def __init__(self, seed_filename):
 		with open(seed_filename, "rb") as seed_file:
-			prev = seed_file.read(512)
+			prev = seed_file.read(HASH_LENGTH)
 			body = seed_file.read()
+		Block(prev, body)
+		with open()
+
 		self.root = Block(prev, body)
 		self.tail = self.root
 
@@ -41,7 +52,6 @@ class Chain():
 		update_body = format_update(update_filename)
 		new_block = Block(self.tail.hash, update_body)
 		self.tail = new_block
-
 
 
 
