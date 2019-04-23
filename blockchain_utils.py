@@ -18,13 +18,6 @@ HASH_FN = hashlib.sha512
 HASH_LENGTH = 512
 
 
-def generate_random_seed(filename, num_bytes):
-	''' Generates random seed for blockchain root. '''
-	with open(filename, "wb") as file:
-		file.write() # random starting hash
-		file.write(os.urandom(num_bytes)) # random starting body
-	 # file is read-only
-
 
 def format_update(update_file):
 	''' Converts raw update file to a format for the blockchain. '''
@@ -34,38 +27,45 @@ def format_update(update_file):
 	return update_body # should be in byte format
 
 
+class ProofException(Exception):
+	''' Raised when proof of work fails to verify. '''
+	pass
+
+
 class Block():
 	'''
 	Block information is formatted in this order.
 
 	self.hash	=	hash of current block body and previous block hash
+	self.proof	=	proof of work
 	self.prev	=	hash of previous block	
 	self.body	=	body of update for current block
-
-	other data
-		self.proof	=	proof of work
-		self.time	=	timestamp
+	self.time	=	timestamp
 
 	Everything must be string format.
 	'''
+	def verify_proof(self, proof):
+		# return proof[:6] == '000000'
+		return True
 
-	def __init__(self, chain_name, prev, proof, body):
-		self.proof = proof # verify_proof(proof, prev, body) == True
-		self.prev = prev # must be string
-		self.body = body # must be string
+	def __init__(self, chain_name, proof, prev, body):
 		try:
-			self.hash =  HASH_FN(str.encode(prev) + str.encode(body)).hexdigest()
+			block_hash = HASH_FN(str.encode(proof) + str.encode(prev) + str.encode(body)).hexdigest()
 		except:
 			print("All arguments should be passed as string format.")
-		self.time = str(time.time())
-		
-		with open(chain_name + "/" + self.hash, "w+") as block_file:
-			block_file.write(self.hash + '\n')
-			block_file.write(self.prev + '\n')
-			block_file.write(self.body + '\n')
-			block_file.write(self.proof + '\n')
-			block_file.write(self.time + '\n')
-		os.chmod(chain_name + "/" + self.hash, S_IROTH)
+
+		if self.verify_proof(block_hash):
+			append_time = str(time.time())
+			with open(chain_name + "/" + self.hash, "w+") as block_file:
+				block_file.write(block_hash + '\n')
+				block_file.write(proof + '\n')
+				block_file.write(prev + '\n')
+				block_file.write(body + '\n')
+				block_file.write(append_time + '\n')
+			os.chmod(chain_name + "/" + self.hash, S_IROTH)
+		else:
+			raise ProofException("Proof of work failed.")
+
 
 
 class Chain():
@@ -80,44 +80,40 @@ class Chain():
 		self.name = chain_name
 		
 		if os.path.isfile(chain_name): # existing chain already exists
-			print("Loading blockchain '" + chain_name + "'.")
+			print("Loading blockchain '" + chain_name + "'.\n")
 			with open(chain_name + '/' + chain_name, "r") as chain_header:
 				self.tail = chain_header.readline()
 		
 		else: # initialize new blockchain
-			print("Blockchain '" + chain_name + "'' does not exist. Initializing new chain.")
+			print("Blockchain '" + chain_name + "'' does not exist. Initializing new chain.\n")
 			os.mkdir(chain_name)
 
 			with open(chain_name + '/' + chain_name, 'w+') as chain_header: 
+				proof = os.urandom(seed_length).hex()
 				prev = os.urandom(HASH_LENGTH).hex()
 				body = os.urandom(seed_length).hex()
-				proof = os.urandom(seed_length).hex()
 				
-				root_block = Block(self.name, prev, proof, body)
+				root_block = Block(self.name, proof, prev, body)
 				chain_header.write(root_block.hash)
 			
 			with open(chain_name + '/' + chain_name, "r") as chain_header:
 				self.tail = chain_header.readline()
-	
-	def verify_proof(self, prev, proof, body):
-		curr_hash = HASH_FN(str.encode(prev) + str.encode(body))
-		# verification = some_function(proof, curr_hash) 
-		#	e.g. hash(proof + curr_hash)[:6] == '000000'
-		return True
 
 
-	def append_block(self, prev, proof, body):
-		if self.verify_proof(prev, proof, body):
-			new_block = Block(self.name, prev, proof, body)
+	def append_block(self, proof, prev, body):
+		try:
+			new_block = Block(self.name, proof, prev, body)
 			with open(self.name + '/' + self.name, 'w') as chain_header:
 				chain_header.write(new_block.hash)
 				self.tail = new_block.hash 
-			print("Successfully appended update " + new_block.hash)
+			print("Successfully appended update " + new_block.hash + "\n")
+		except ProofException:
+			print("Proof of work failed.")
 
 
 
 
-test_chain = Chain('newchain_1', 720)
+test_chain = Chain('newchain_3', 720)
 test_chain.append_block(test_chain.tail, 'blablah', 'hello world')
 test_chain.append_block(test_chain.tail, 'gdi', 'goodbye world')
 test_chain.append_block(test_chain.tail, 'deadbeef', 'i made steak')
