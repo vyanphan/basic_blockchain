@@ -23,7 +23,7 @@ def generate_random_seed(filename, num_bytes):
 	with open(filename, "wb") as file:
 		file.write() # random starting hash
 		file.write(os.urandom(num_bytes)) # random starting body
-	os.chmod(filename, S_IROTH) # file is read-only
+	 # file is read-only
 
 
 def format_update(update_file):
@@ -65,7 +65,7 @@ class Block():
 			block_file.write(self.body + '\n')
 			block_file.write(self.proof + '\n')
 			block_file.write(self.time + '\n')
-
+		os.chmod(chain_name + "/" + self.hash, S_IROTH)
 
 
 class Chain():
