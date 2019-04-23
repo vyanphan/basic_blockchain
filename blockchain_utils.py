@@ -123,7 +123,7 @@ class Chain():
 		
 		except ProofException:
 			# do not create new block record or update tail if proof fails
-			print("Proof of work failed. Block not appended. ")
+			print("Proof of work failed. Block not appended.")
 
 
 
