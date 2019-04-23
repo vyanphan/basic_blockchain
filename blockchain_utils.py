@@ -21,7 +21,7 @@ HASH_LENGTH = 512
 def generate_random_seed(filename, num_bytes):
 	''' Generates random seed for blockchain root. '''
 	with open(filename, "wb") as file:
-		file.write(os.urandom(HASH_LENGTH)) # random starting hash
+		file.write() # random starting hash
 		file.write(os.urandom(num_bytes)) # random starting body
 	os.chmod(filename, S_IROTH) # file is read-only
 
@@ -36,6 +36,8 @@ def format_update(update_file):
 
 class Block():
 	'''
+	Block information is formatted in this order.
+
 	self.hash	=	hash of current block body and previous block hash
 	self.prev	=	hash of previous block	
 	self.body	=	body of update for current block
@@ -48,7 +50,7 @@ class Block():
 	'''
 
 	def __init__(self, prev, proof, body):
-		self.proof = proof # verify_proof(proof, hash, prev, body) == True
+		self.proof = proof # verify_proof(proof, prev, body) == True
 		self.prev = prev # must be string
 		self.body = body # must be string
 		try:
@@ -64,26 +66,37 @@ class Block():
 			block_file.write(self.proof + '\n')
 			block_file.write(self.time + '\n')
 
+		return self.hash
+
+
 class Chain():
-	def __init__(self, chain_name):
-		with open(chain_name, 'w+') as header: 
-			prev = seed_file.read(HASH_LENGTH)
-			body = seed_file.read()
-			Block(prev, body)
-
-
-
-		with open(seed_filename, "rb") as seed_file:
-
-		self.root = Block(prev, body)
-		self.tail = self.root
-
+	def __init__(self, chain_name, seed_length):
+		if os.path.isfile(chain_name):
+			print("Loading blockchain '" + chain_name + "'.")
+			with open(chain_name, "r") as chain_header:
+				self.tail = chain_header.readline()
+		else:
+			print("Blockchain '" + chain_name + "'' does not exist. Initializing new chain.")
+			with open(chain_name, 'w+') as chain_header: 
+				prev = os.urandom(HASH_LENGTH)
+				body = os.urandom(seed_length)
+				proof = os.urandom(seed_length)
+				root_hash = Block(prev, proof, body)
+				chain_header.write(root_hash)
+			with open(chain_name, "r") as chain_header:
+				self.tail = chain_header.readline()
 	
+	def verify_proof(prev, proof, body):
+		curr_hash = HASH_FN(prev + body)
+		# verification = some_function(proof, curr_hash) 
+		#	e.g. hash(proof + curr_hash)[:6] == '000000'
+		return True
 
-	def (self, update_filename):
-		update_body = format_update(update_filename)
-		new_block = Block(self.tail.hash, update_body)
-		self.tail = new_block
+
+	def append_block(self, proof, body):
+		if verify_proof(, proof, body):
+			new_block = Block(self.tail.hash, update_body)
+			self.tail = new_block
 
 
 
