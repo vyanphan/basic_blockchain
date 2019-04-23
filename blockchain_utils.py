@@ -59,18 +59,25 @@ class Block():
 			print("All arguments should be passed as string format.")
 		self.time = str(time.time())
 		
-		with open("records/" + block_hash.hexdigest(), "w+") as block_file:
+		with open("records/" + self.hash, "w+") as block_file:
 			block_file.write(self.hash + '\n')
 			block_file.write(self.prev + '\n')
 			block_file.write(self.body + '\n')
 			block_file.write(self.proof + '\n')
 			block_file.write(self.time + '\n')
 
-		return self.hash
 
 
 class Chain():
+	'''
+	chain_header stores the tail, aka the hash of the most recently appended block.
+
+	self.name = name of the chain
+	self.tail = hash of most recently appended block
+	'''
+
 	def __init__(self, chain_name, seed_length):
+		self.name = chain_name
 		if os.path.isfile(chain_name):
 			print("Loading blockchain '" + chain_name + "'.")
 			with open(chain_name, "r") as chain_header:
@@ -78,34 +85,41 @@ class Chain():
 		else:
 			print("Blockchain '" + chain_name + "'' does not exist. Initializing new chain.")
 			with open(chain_name, 'w+') as chain_header: 
-				prev = os.urandom(HASH_LENGTH)
-				body = os.urandom(seed_length)
-				proof = os.urandom(seed_length)
-				root_hash = Block(prev, proof, body)
-				chain_header.write(root_hash)
+				prev = os.urandom(HASH_LENGTH).hex()
+				body = os.urandom(seed_length).hex()
+				proof = os.urandom(seed_length).hex()
+				
+				root_block = Block(prev, proof, body)
+				chain_header.write(root_block.hash)
 			with open(chain_name, "r") as chain_header:
 				self.tail = chain_header.readline()
 	
-	def verify_proof(prev, proof, body):
-		curr_hash = HASH_FN(prev + body)
+	def verify_proof(self, prev, proof, body):
+		curr_hash = HASH_FN(str.encode(prev) + str.encode(body))
 		# verification = some_function(proof, curr_hash) 
 		#	e.g. hash(proof + curr_hash)[:6] == '000000'
 		return True
 
 
-	def append_block(self, proof, body):
-		if verify_proof(, proof, body):
-			new_block = Block(self.tail.hash, update_body)
-			self.tail = new_block
+	def append_block(self, prev, proof, body):
+		if self.verify_proof(prev, proof, body):
+			new_block = Block(prev, proof, body)
+			with open(self.name, 'w') as chain_header:
+				chain_header.write(new_block.hash)
+				self.tail = new_block.hash 
+			print("Successfully appended update " + new_block.hash)
 
 
 
 
-# generate_random_seed('seedfile_test', 762)
-blockchain_test = Chain('seedfile_test')
-b1 = blockchain_test.tail.hash
-print(b1)
-blockchain_test.add_block('update1.txt')
-print(blockchain_test.tail.prev == b1)
-print(blockchain_test.tail.hash)
+test_chain = Chain('test_chain', 720)
+# test_chain.append_block(test_chain.tail, 'blablah', 'hello world')
+# test_chain.append_block(test_chain.tail, 'gdi', 'goodbye world')
+# test_chain.append_block(test_chain.tail, 'deadbeef', 'i made steak')
+test_chain.append_block(test_chain.tail, 'proof 4', 'update 4')
+test_chain.append_block(test_chain.tail, 'proof 5', 'update 5')
+
+
+
+
 
