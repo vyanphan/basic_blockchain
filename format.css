@@ -1,0 +1,28 @@
+body {
+  background-color: #c4e3fd;
+  font-family: "Monospace", Courier;
+}
+table {
+  table-layout: fixed;
+  width: 100%;
+  background-color: #FFFFFF;
+  border: 3px solid black;
+  border-collapse: collapse;
+}
+th {
+  word-wrap: break-word;
+  background-color: #6ab9f9;
+  border: 2px solid black;
+  border-collapse: collapse;
+}
+tr {
+  word-wrap: break-word;
+}
+td { 
+  border: 1px solid black;
+  border-collapse: collapse;
+  vertical-align: top;
+}
+td+td {
+  width: auto;
+}
