@@ -128,9 +128,9 @@ class Chain():
 
 
 
-test_chain = Chain('newchain_1', 720)
-test_chain.append_block('proof1', test_chain.tail, 'update1')
-test_chain.append_block('proof2', test_chain.tail, 'update2')
-test_chain.append_block('proof3', test_chain.tail, 'update3')
-test_chain.append_block('proof4', test_chain.tail, 'update4')
-test_chain.append_block('proof5', test_chain.tail, 'update5')
+# test_chain = Chain('newchain_1', 720)
+# test_chain.append_block('proof1', test_chain.tail, 'update1')
+# test_chain.append_block('proof2', test_chain.tail, 'update2')
+# test_chain.append_block('proof3', test_chain.tail, 'update3')
+# test_chain.append_block('proof4', test_chain.tail, 'update4')
+# test_chain.append_block('proof5', test_chain.tail, 'update5')
