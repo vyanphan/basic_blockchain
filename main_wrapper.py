@@ -3,13 +3,14 @@ from blockchain_utils import *
 import os
 
 TABLE_LABELS = ['Proof', 'Next Block', 'Update Body', 'Time']
+SEED_LENGTH = 256
 
 def append_update(blockchain, proof, update_file, private_mode):
     with open(update_file, "r") as rd_file:
         update_block = rd_file.read()
         if private_mode:
-            salt = os.urandom(seed_length).hex()
-            update_block = salt + ' ' + HASH_FN(salt + update_block)
+            salt = os.urandom(SEED_LENGTH)
+            update_block = salt.hex() + ' ' + HASH_FN(salt + str.encode(update_block)).hexdigest()
         blockchain.append_block(proof, blockchain.tail, update_block)
 
 
@@ -56,6 +57,18 @@ def display(output_file, chain_folder, chain_head):
         out_file.write('</body></html>')
 
 
+test_blockchain = Chain('test_blockchain', 512)
+append_update(test_blockchain, 'proof1', 'test_blockchain_updates/update1', False)
+append_update(test_blockchain, 'proof2', 'test_blockchain_updates/update2', False)
+append_update(test_blockchain, 'proof3', 'test_blockchain_updates/update3', False)
+append_update(test_blockchain, 'proof4', 'test_blockchain_updates/update4', False)
+append_update(test_blockchain, 'proof5', 'test_blockchain_updates/update5', False)
+display('test_blockchain.html', 'test_blockchain', 'test_blockchain')
 
-display('newchain_1.html', 'newchain_1', 'newchain_1')
-
+test_blockchain_private = Chain('test_blockchain_private', 512)
+append_update(test_blockchain_private, 'proof1', 'test_blockchain_updates/update1', True)
+append_update(test_blockchain_private, 'proof2', 'test_blockchain_updates/update2', True)
+append_update(test_blockchain_private, 'proof3', 'test_blockchain_updates/update3', True)
+append_update(test_blockchain_private, 'proof4', 'test_blockchain_updates/update4', True)
+append_update(test_blockchain_private, 'proof5', 'test_blockchain_updates/update5', True)
+display('test_blockchain_private.html', 'test_blockchain_private', 'test_blockchain_private')
