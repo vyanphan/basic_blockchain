@@ -37,7 +37,7 @@ class Block():
 	'''
 	A single update unit to a blockchain. Block information is formatted in this order.
 
-	self.hash	=	hash of current block body and previous block hash
+	self.hash	=	hash of current block (includes everything else)
 	proof		=	proof of work
 	prev		=	hash of previous block	
 	body		=	body of update for current block
@@ -45,20 +45,19 @@ class Block():
 
 	Everything must be string format.
 	'''
-	def verify_proof(self, proof):
+	def verify_proof(self, proof, prev, body):
 		# return proof[:6] == '000000'
 		return True
 
 	def __init__(self, chain_name, proof, prev, body):
-		# generate hash of block
-		try:
-			self.hash = HASH_FN(str.encode(proof) + str.encode(prev) + str.encode(body)).hexdigest()
-		except:
-			print("All arguments should be passed as string format.")
-
 		# verify proof
-		if self.verify_proof(self.hash):
+		if self.verify_proof(proof, prev, body):
+			# generate hash of block
 			append_time = str(time.time())
+			try:
+				self.hash = HASH_FN(str.encode(proof) + str.encode(prev) + str.encode(body) + str.encode(append_time)).hexdigest()
+			except:
+				print("All arguments should be passed as string format.")
 			
 			# write to record file
 			with open(chain_name + "/" + self.hash, "w+") as block_file:
