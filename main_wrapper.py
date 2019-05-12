@@ -5,6 +5,7 @@ import os
 TABLE_LABELS = ['Proof', 'Next Block', 'Update Body', 'Time']
 SEED_LENGTH = 256
 
+# adds a new block to the webpage
 def append_update(blockchain, proof, update_file, private_mode):
     with open(update_file, "r") as rd_file:
         update_block = rd_file.read()
@@ -14,6 +15,7 @@ def append_update(blockchain, proof, update_file, private_mode):
         blockchain.append_block(proof, blockchain.tail, update_block)
 
 
+# reads in information from an existing chain
 def parse_chain(chain_folder, chain_head):
     if chain_folder[-1] != '/':
         chain_folder += '/'
@@ -38,6 +40,7 @@ def parse_chain(chain_folder, chain_head):
         next_block = chain_folder + next_block
     return blocks
 
+# uses existing blockchain files to generate the web page for that blockchain
 def display(output_file, chain_folder, chain_head):
     blocks = parse_chain(chain_folder, chain_head)
 
@@ -57,6 +60,9 @@ def display(output_file, chain_folder, chain_head):
         out_file.write('</body></html>')
 
 
+# Example test code
+
+# Generates the raw public version of the blockchain, with updates in plain text.
 test_blockchain = Chain('test_blockchain', 512)
 append_update(test_blockchain, 'proof1', 'test_blockchain_updates/update1', False)
 append_update(test_blockchain, 'proof2', 'test_blockchain_updates/update2', False)
@@ -65,6 +71,7 @@ append_update(test_blockchain, 'proof4', 'test_blockchain_updates/update4', Fals
 append_update(test_blockchain, 'proof5', 'test_blockchain_updates/update5', False)
 display('test_blockchain.html', 'test_blockchain', 'test_blockchain')
 
+# Generates the private version of the blockchain, with a salted and hashed version of the update, to protect proprietary code.
 test_blockchain_private = Chain('test_blockchain_private', 512)
 append_update(test_blockchain_private, 'proof1', 'test_blockchain_updates/update1', True)
 append_update(test_blockchain_private, 'proof2', 'test_blockchain_updates/update2', True)

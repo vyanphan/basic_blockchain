@@ -18,7 +18,7 @@ HASH_FN = hashlib.sha512
 HASH_LENGTH = 512
 
 
-
+# a placeholder function that users can customize, if they want a different layout
 def format_update(update_file):
 	''' Converts raw update file to a format for the blockchain. '''
 	with open(update_file, "rb") as update_file:
@@ -27,6 +27,7 @@ def format_update(update_file):
 	return update_body # should be in byte format
 
 
+# raised when a proof of work check fails
 class ProofException(Exception):
 	''' Raised when proof of work fails to verify. '''
 	pass
@@ -34,7 +35,7 @@ class ProofException(Exception):
 
 class Block():
 	'''
-	Block information is formatted in this order.
+	A single update unit to a blockchain. Block information is formatted in this order.
 
 	self.hash	=	hash of current block body and previous block hash
 	proof		=	proof of work
@@ -74,9 +75,13 @@ class Block():
 			raise ProofException("Proof of work failed.")
 
 
-
 class Chain():
 	'''
+	Made of many Blocks strung together.
+	The first Block is always a bunch of random gibberish, i.e. a standard header.
+	This is to provide randomness and security to the rest of the blockchain,
+	and to prevent null pointers.
+
 	chain_header stores the tail, aka the hash of the most recently appended block.
 
 	self.name = name of the chain
@@ -85,6 +90,7 @@ class Chain():
 		This tail file is not meant to be a secure display of the latest appended block. Unlike the record files it is not write protected.
 	'''
 
+	# reads from existing chain if available, or creates a new one
 	def __init__(self, chain_name, seed_length):
 		self.name = chain_name
 		
@@ -111,6 +117,7 @@ class Chain():
 				self.tail = chain_header.readline()
 
 
+	# adds a new block onto the chain
 	def append_block(self, proof, prev, body):
 		try: # attempt to create new block
 			new_block = Block(self.name, proof, prev, body)
